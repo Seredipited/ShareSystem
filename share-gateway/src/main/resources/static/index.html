@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人学习资料分享系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .landing .logo-icon {
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+        .landing h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .landing .subtitle { font-size: 18px; opacity: 0.85; margin-bottom: 40px; max-width: 500px; }
+        .landing .btn-group { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .btn-landing {
+            padding: 14px 36px; border-radius: 50px; font-size: 16px; font-weight: 600;
+            border: none; cursor: pointer; transition: all 0.3s ease;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-landing-primary { background: white; color: #667eea; }
+        .btn-landing-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .btn-landing-secondary { background: rgba(255,255,255,0.2); color: white; backdrop-filter: blur(10px); }
+        .btn-landing-secondary:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        .features {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px; max-width: 900px; margin-top: 60px;
+        }
+        .feature-item {
+            padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px;
+            backdrop-filter: blur(10px); text-align: left;
+        }
+        .feature-item .feature-icon { font-size: 28px; margin-bottom: 8px; }
+        .feature-item h3 { font-size: 16px; margin-bottom: 4px; }
+        .feature-item p { font-size: 13px; opacity: 0.8; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="landing">
+        <div class="logo-icon">📎</div>
+        <h1>个人学习资料分享系统</h1>
+        <p class="subtitle">安全 · 便捷 · 高效的个人网盘，支持文件上传、在线预览、分享管理</p>
+
+        <div class="btn-group">
+            <a href="/pages/login.html" class="btn-landing btn-landing-primary">🚀 立即登录</a>
+            <a href="/pages/register.html" class="btn-landing btn-landing-secondary">📝 注册账号</a>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">📁</div>
+                <h3>文件管理</h3>
+                <p>支持文件夹、文件上传、下载、重命名、移动等操作</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">⚡</div>
+                <h3>秒传 & 分片</h3>
+                <p>MD5秒传技术，大文件分片上传，支持断点续传</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🎬</div>
+                <h3>在线预览</h3>
+                <p>支持图片、视频、音频、PDF、Office等格式在线预览</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🔗</div>
+                <h3>文件分享</h3>
+                <p>生成分享链接，支持提取码和有效期设置</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

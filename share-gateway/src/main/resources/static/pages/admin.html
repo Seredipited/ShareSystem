@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 个人学习资料分享系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 1px solid var(--border-lighter);
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+        .data-table td .btn { margin-right: 4px; }
+        .space-input {
+            display: flex; gap: 8px; align-items: center; margin-top: 8px;
+        }
+        .space-input input {
+            width: 100px; padding: 4px 8px; border: 1px solid var(--border-light);
+            border-radius: 6px; font-size: 13px;
+        }
+        .space-input select {
+            padding: 4px 8px; border: 1px solid var(--border-light);
+            border-radius: 6px; font-size: 13px; background: var(--bg-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">📎</div>
+                <span class="app-name">管理后台</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">管理</div>
+                    <a class="nav-item active" data-tab="dashboard" onclick="switchAdminTab('dashboard')">
+                        <span class="nav-icon">📊</span> 仪表盘
+                    </a>
+                    <a class="nav-item" data-tab="users" onclick="switchAdminTab('users')">
+                        <span class="nav-icon">👤</span> 用户管理
+                    </a>
+                    <a class="nav-item" data-tab="files" onclick="switchAdminTab('files')">
+                        <span class="nav-icon">📁</span> 文件管理
+                    </a>
+                    <a class="nav-item" data-tab="shares" onclick="switchAdminTab('shares')">
+                        <span class="nav-icon">🔗</span> 分享管理
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a class="nav-item" href="/pages/main.html" style="color:rgba(255,255,255,0.7);">
+                    <span class="nav-icon">🏠</span> 返回网盘
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="breadcrumb">
+                    <span class="breadcrumb-current" id="tabTitle">仪表盘</span>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box" id="searchBox" style="display:none;">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="搜索..." id="searchInput" oninput="handleAdminSearch(this.value)">
+                    </div>
+                    <div class="user-menu" onclick="toggleUserMenu()">
+                        <div class="user-avatar" id="userAvatar">A</div>
+                        <span class="user-name" id="userName">管理员</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area" id="adminContent">
+                <!-- 动态内容区基础 -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 分配空间弹窗 -->
+    <div class="modal-overlay" id="storageModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>分配存储空间</h2>
+                <button class="modal-close" onclick="closeModal('storageModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">用户ID: <strong id="storageUserId">-</strong></label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">空间大小</label>
+                    <div class="space-input">
+                        <input type="number" class="form-input" id="storageSize" placeholder="大小" min="1">
+                        <select id="storageUnit">
+                            <option value="1048576">MB</option>
+                            <option value="1073741824" selected>GB</option>
+                            <option value="1099511627776">TB</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('storageModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmAllocateStorage()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/admin.js"></script>
+    <script>
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdminStats();
+            switchAdminTab('dashboard');
+        });
+    </script>
+</body>
+</html>

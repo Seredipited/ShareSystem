@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人学习资料分享系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .empty-upload { cursor: pointer; padding: 80px 20px; text-align: center; border: 2px dashed var(--border-light); border-radius: var(--radius-lg); margin: 20px 0; transition: all var(--transition); }
+        .empty-upload:hover { border-color: var(--accent); background: rgba(0,113,227,0.03); }
+        .empty-upload .upload-icon { font-size: 56px; margin-bottom: 16px; }
+        .context-menu { display: none; }
+        .context-menu.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">📎</div>
+                <span class="app-name">学习资料分享</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">功能</div>
+                    <a class="nav-item active" data-page="files" onclick="switchPage('files')">
+                        <span class="nav-icon">📁</span> 我的文件
+                    </a>
+                    <a class="nav-item" data-page="shared" onclick="switchPage('shared')">
+                        <span class="nav-icon">🔗</span> 我的分享
+                    </a>
+                    <a class="nav-item" data-page="recycle" onclick="switchPage('recycle')">
+                        <span class="nav-icon">🗑️</span> 回收站
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="storage-info">
+                    <span class="storage-text">存储空间</span>
+                    <div class="storage-bar">
+                        <div class="storage-bar-fill" id="storageFill" style="width:0%"></div>
+                    </div>
+                    <span class="storage-text" id="storageText">0 B / 1 GB</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="breadcrumb" id="breadcrumb">
+                    <span class="breadcrumb-item" onclick="navigateToRoot()">
+                        🏠 全部文件
+                    </span>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="搜索文件..." id="searchInput"
+                               oninput="handleSearch(this.value)">
+                    </div>
+                    <div class="user-menu" onclick="toggleUserMenu()">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <span class="user-name" id="userName">用户</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area" id="contentArea">
+                <!-- 工具栏 -->
+                <div class="toolbar" id="toolbar">
+                    <div class="toolbar-group">
+                        <button class="btn btn-primary" onclick="openUploadDialog()">
+                            <span class="btn-icon">⬆️</span> 上传文件
+                        </button>
+                        <button class="btn btn-secondary" onclick="createNewFolder()">
+                            <span class="btn-icon">📁</span> 新建文件夹
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="btn btn-ghost btn-sm" onclick="toggleSelectMode()" id="selectBtn">
+                            多选
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="batchDownload()" id="batchDownloadBtn" style="display:none">
+                            下载
+                        </button>
+                        <button class="btn btn-ghost btn-sm btn-danger" onclick="batchDelete()" id="batchDeleteBtn" style="display:none">
+                            删除
+                        </button>
+                    </div>
+                    <div class="toolbar-divider"></div>
+                    <div class="toolbar-group">
+                        <button class="btn btn-ghost btn-sm" onclick="switchView('grid')" id="viewGridBtn" style="font-weight:600">
+                            🔲 网格
+                        </button>
+                        <button class="btn btn-ghost btn-sm" onclick="switchView('list')" id="viewListBtn">
+                            ☰ 列表
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 文件列表容器 -->
+                <div class="file-view" id="fileView">
+                    <div class="empty-state">
+                        <div class="empty-icon">📂</div>
+                        <div class="empty-title">暂无文件</div>
+                        <div class="empty-desc">上传文件或创建文件夹开始使用</div>
+                        <button class="btn btn-primary" onclick="openUploadDialog()">
+                            ⬆️ 上传文件
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 上传文件对话框（隐藏的input）-->
+    <input type="file" id="fileInput" style="display:none" multiple onchange="handleFileSelect(event)">
+    <input type="file" id="folderInput" style="display:none" webkitdirectory directory onchange="handleFileSelect(event)">
+
+    <!-- 新建文件夹弹窗 -->
+    <div class="modal-overlay" id="folderModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>新建文件夹</h2>
+                <button class="modal-close" onclick="closeModal('folderModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">文件夹名称</label>
+                    <input type="text" class="form-input" id="folderNameInput"
+                           placeholder="请输入文件夹名称" onkeypress="if(event.key==='Enter')confirmCreateFolder()">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('folderModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmCreateFolder()">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 重命名弹窗 -->
+    <div class="modal-overlay" id="renameModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>重命名</h2>
+                <button class="modal-close" onclick="closeModal('renameModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">新名称</label>
+                    <input type="text" class="form-input" id="renameInput"
+                           onkeypress="if(event.key==='Enter')confirmRename()">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('renameModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmRename()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动文件弹窗 -->
+    <div class="modal-overlay" id="moveModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>移动到...</h2>
+                <button class="modal-close" onclick="closeModal('moveModal')">✕</button>
+            </div>
+            <div class="modal-body" id="moveFolderList">
+                <p style="color:var(--text-tertiary);">加载中...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('moveModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmMove()">移动</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>创建分享</h2>
+                <button class="modal-close" onclick="closeModal('shareModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">提取码（可选）</label>
+                    <input type="text" class="form-input" id="sharePwdInput"
+                           placeholder留空则不设置提取码 maxlength="10">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">有效期</label>
+                    <select class="form-input" id="shareExpireSelect">
+                        <option value="0">永久有效</option>
+                        <option value="1">1天</option>
+                        <option value="7" selected>7天</option>
+                        <option value="30">30天</option>
+                    </select>
+                </div>
+                <div id="shareResult" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">分享链接</label>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" class="form-input" id="shareLink" readonly>
+                            <button class="btn btn-primary btn-sm" onclick="copyShareLink()">复制</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="shareCreateFooter">
+                <button class="btn btn-secondary" onclick="closeModal('shareModal')">取消</button>
+                <button class="btn btn-primary" onclick="confirmCreateShare()">创建分享</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传进度弹窗 -->
+    <div class="modal-overlay" id="uploadProgressModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>上传进度</h2>
+                <button class="modal-close" onclick="closeModal('uploadProgressModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="progress-list" id="progressList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

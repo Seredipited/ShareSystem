@@ -1,0 +1,48 @@
+# === Maven ===
+target/
+*.jar
+!gateway-lib/*.jar
+*.war
+*.ear
+pom.xml.versionsBackup
+
+# === IDE ===
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+.eclipse/
+
+# === 日志 ===
+logs/
+*.log
+
+# === 运行时数据 ===
+nacos-data/
+nacos-logs/
+uploads/
+derby.log
+
+# === Maven 本地缓存 ===
+.m2-repo/
+
+# === 临时/中间文件 ===
+gw-extracted/
+gw-fixed/
+*.tmp
+*.bak
+*.swp
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === CodeBuddy ===
+.codebuddy/

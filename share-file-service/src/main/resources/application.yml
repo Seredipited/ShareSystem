@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: share-file-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/share_system?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 112233
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+      config:
+        enabled: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 200MB
+      max-request-size: 200MB
+
+server:
+  port: 8182
+
+file:
+  upload:
+    base-path: D:\IDEA\ssm\ShareSystem\storage\files
+  chunk:
+    size: 1048576
+
+mybatis-plus:
+  type-aliases-package: com.sharesystem.common.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+logging:
+  level:
+    com.sharesystem.file: DEBUG

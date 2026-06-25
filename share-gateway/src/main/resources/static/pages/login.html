@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 个人学习资料分享系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo">
+                <div class="logo-icon">📎</div>
+                <h1>学习资料分享</h1>
+                <p>安全 · 便捷 · 高效的个人网盘</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" id="username" placeholder="请输入用户名" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">密码</label>
+                    <input type="password" class="form-input" id="password" placeholder="请输入密码" required autocomplete="current-password">
+                </div>
+                <p id="loginError" class="form-error" style="display:none; margin-bottom:12px;"></p>
+                <button type="submit" class="btn btn-primary btn-full" id="loginBtn">登录</button>
+            </form>
+            <div class="divider-text">或</div>
+            <button class="btn btn-full btn-qq" onclick="handleQQLogin()">QQ 快捷登录</button>
+            <p class="auth-footer">还没有账号？<a href="/pages/register.html">立即注册</a></p>
+        </div>
+    </div>
+    <script src="/js/api.js"></script>
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errorEl = document.getElementById('loginError');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            errorEl.style.display = 'none';
+            try {
+                const result = await API.user.login({
+                    username: document.getElementById('username').value.trim(),
+                    password: document.getElementById('password').value,
+                    type: 'password'
+                });
+                if (result.code === 200) {
+                    Toast.success('登录成功');
+                    const user = API.getCurrentUser();
+                    setTimeout(() => {
+                        window.location.href = user && user.role === 1 ? '/pages/admin.html' : '/pages/main.html';
+                    }, 500);
+                } else {
+                    errorEl.textContent = result.message || '登录失败';
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.textContent = err.message || '登录失败，请检查网络连接';
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登录';
+            }
+        }
+        async function handleQQLogin() {
+            try {
+                const result = await API.user.getQQLoginUrl();
+                if (result.code === 200 && result.data) {
+                    Toast.info('正在跳转QQ授权...');
+                    setTimeout(() => {
+                        window.location.href = '/api/user/qq/callback?code=mock_code_' + Date.now();
+                    }, 1000);
+                }
+            } catch (err) {
+                Toast.error('QQ登录功能暂不可用');
+            }
+        }
+    </script>
+</body>
+</html>

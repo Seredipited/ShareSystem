@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分享文件 - 个人学习资料分享系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .share-card .file-icon-lg { font-size: 64px; margin-bottom: 20px; }
+        .share-card .file-detail { text-align: left; margin: 20px 0; }
+        .share-card .file-detail .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid var(--border-lighter); }
+        .share-card .file-detail .row .label { color: var(--text-tertiary); }
+        .share-card .btn-full { width: 100%; justify-content: center; padding: 10px 24px; font-size: 14px; margin-top: 8px; }
+        .pwd-input-group { display: flex; gap: 8px; }
+        .pwd-input-group input { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="share-page">
+        <div class="share-card" id="shareCard">
+            <div class="loading-spinner" style="margin:40px auto;"></div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const shareCode = params.get('code');
+
+        async function loadShareInfo() {
+            const card = document.getElementById('shareCard');
+            if (!shareCode) {
+                card.innerHTML = `<div class="share-icon">❌</div><h2>无效的分享链接</h2>`;
+                return;
+            }
+
+            try {
+                const result = await API.share.verify(shareCode);
+                if (result.code !== 200) {
+                    if (result.code === 1001) {
+                        // 需要提取码
+                        card.innerHTML = `
+                            <div class="share-icon">🔐</div>
+                            <h2>私密分享</h2>
+                            <p class="share-meta">此文件需要提取码才能查看</p>
+                            <div class="form-group">
+                                <div class="pwd-input-group">
+                                    <input type="text" class="form-input" id="extractCode"
+                                           placeholder="请输入提取码" maxlength="10"
+                                           onkeypress="if(event.key==='Enter')verifyPwd()">
+                                    <button class="btn btn-primary" onclick="verifyPwd()">验证</button>
+                                </div>
+                                <p class="form-error" id="pwdError" style="display:none;"></p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    card.innerHTML = `<div class="share-icon">❌</div><h2>分享不存在或已过期</h2>`;
+                    return;
+                }
+
+                renderFileInfo(result.data);
+            } catch (e) {
+                card.innerHTML = `<div class="share-icon">❌</div><h2>${e.message}</h2>`;
+            }
+        }
+
+        async function verifyPwd() {
+            const pwd = document.getElementById('extractCode').value.trim();
+            const errorEl = document.getElementById('pwdError');
+            if (!pwd) {
+                errorEl.textContent = '请输入提取码';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const result = await API.share.verify(shareCode, pwd);
+                if (result.code === 200) {
+                    renderFileInfo(result.data);
+                } else {
+                    errorEl.textContent = result.message;
+                    errorEl.style.display = 'block';
+                }
+            } catch (e) {
+                errorEl.textContent = e.message;
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function renderFileInfo(file) {
+            const card = document.getElementById('shareCard');
+            const ext = (file.fileType || '').toLowerCase();
+            const isFolder = file.isFolder === 1;
+            const icon = isFolder ? '📁' :
+                (ext.match(/jpg|jpeg|png|gif/) ? '🖼️' :
+                 ext.match(/mp4|avi|mov/) ? '🎥' :
+                 ext.match(/mp3|wav/) ? '🎵' :
+                 ext === 'pdf' ? '📄' :
+                 ext.match(/doc|docx/) ? '📝' :
+                 ext.match(/xls|xlsx/) ? '📊' : '📄');
+
+            card.innerHTML = `
+                <div class="file-icon-lg">${icon}</div>
+                <h2>${file.fileName}</h2>
+                <p class="share-meta">${isFolder ? '文件夹' : '文件'} · ${formatSize(file.fileSize)}</p>
+                <div class="file-detail">
+                    ${!isFolder ? `<div class="row"><span class="label">类型</span><span>${ext.toUpperCase()}</span></div>` : ''}
+                    <div class="row"><span class="label">大小</span><span>${formatSize(file.fileSize)}</span></div>
+                    <div class="row"><span class="label">上传时间</span><span>${formatDate(file.createTime)}</span></div>
+                </div>
+                ${!isFolder ? `<button class="btn btn-primary btn-full" onclick="window.open(API.share.getDownloadUrl('${shareCode}'),'_blank')">⬇️ 下载文件</button>` : ''}
+            `;
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const d = Math.floor(Math.log10(bytes) / Math.log10(1024));
+            return (bytes / Math.pow(1024, d)).toFixed(1) + ' ' + units[d];
+        }
+
+        function formatDate(str) {
+            if (!str) return '-';
+            return new Date(str).toLocaleString('zh-CN');
+        }
+
+        loadShareInfo();
+    </script>
+</body>
+</html>
